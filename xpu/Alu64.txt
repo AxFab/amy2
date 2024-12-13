@@ -1,0 +1,63 @@
+
+# Arithmetic and logic unit
+
+BLOCK Alu64
+  IN Ax/64
+  IN Bx/64
+  IN Sz/2     # 8b, 32b, 16b, 64b
+  IN Op/3     # ADD, ADC, SUB, SBB, AND, XOR, OR, -
+  IN Fc/1
+
+  B2 = Op.1 XOR Bx
+  F1 = Op.0 AND Fc
+  F2 = Op.1 XOR F1
+  
+  Qx = Ax AND B2
+  Px = Ax XOR B2
+
+  Sx/64
+  Cr/64
+  Fe = LOOP(64) F2
+    Sx.i = Px.i XOR F2
+    r = Px.i AND F2
+    s = Ax.i AND B2.i
+    Cr.i = r OR s
+    Fe = Cr.i 
+  END
+
+  OUT Rs = SELECT(Op)
+    Sx # ADD
+    Sx # ADC
+    Sx # SUB
+    Sx # SBB
+    Qx # AND
+    Px # XOR
+    Ax OR Bx
+    Ax
+  END
+  
+  S2 = Sx AND Op.2
+  
+  Z8 = NOT OR [Rs.0..7]
+  Z16 = Z8 AND NOT OR [Rs.8..15]
+  Z32 = Z16 AND NOT OR [Rs.16..31]
+  Z64 = Z32 AND NOT OR [Rs.32..63]
+  
+  P8 = XOR [Rs.0..7]
+  P16 = XOR [Z8, Rs.8..15]
+  P32 = XOR [Z16, Rs.16..31]
+  P64 = XOR [Z32, Rs.32..63]
+
+  Fl = SELECT(Sz)
+    [Cr.7, Z8, S2.0, P8]
+    [Cr.31, Z32, S2.0, P32]
+    [Cr.15, Z16, S2.0, P16]
+    [Cr.63, Z64, S2.0, P64]
+  END
+
+  OUT Cr = Fl.0
+  OUT Zr = Fl.1
+  OUT On = Fl.2
+  OUT Pr = Fl.3
+
+END

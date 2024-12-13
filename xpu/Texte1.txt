@@ -1,0 +1,62 @@
+
+
+BLOCK Sp
+
+  IN Sp/16
+
+  // PUSH
+    SP -= 16;
+    STORE Ax at [SP]
+  // POP
+    LOAD Ax form [SP]
+    SP += 16;
+  // CALL
+    SP -= 32
+    STORE IP at [SP+16]
+    STORE BP at [SP]
+    MOV BP, SP
+  // RET
+    MOV SP, BP
+    LOAD BP from [SP]
+    LOAD Ip from [SP + 16]
+    SP += 32
+
+
+
+
+END
+
+
+
+char 8
+short 16
+int 32
+long 32
+long long 64
+size_t 16
+
+__SP16
+
+__IP16 !!?
+
+__SP16
+  Regs : Ax, Bx, Cx, Dx / Sp, Bp, Ip, Fl
+  Reg64: Si Di
+  Reg: Cx / Dx
+
+PAGE: 1Kb => 10bit
+
+16Bits -> 64 * 1Kb (16 by par page on table)
+
+  PageDesc: 32-10 : Address
+    0: Exce
+    1: Write:
+    2: Reserved
+    3: Global
+    4: HaveBeenWrite
+    5: HaveBeenRead
+    6: 
+    10-31: Address
+
+    32-63: Inter backup page
+    64-52: Sp backup

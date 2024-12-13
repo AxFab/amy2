@@ -1,0 +1,115 @@
+
+
+BLOCK Shift
+
+  IN Ax/64
+  IN Cn/7
+  IN Sz/2     # 8b, 32b, 16b, 64b
+  IN Op/3     # ROL ROR, RCL, RCR, SHL, SHR, SAL, SAR
+  IN Fc/1
+
+  # TODO -- Update the count (MOD Sz+1)
+  
+  # ROL
+  #    Fc = Ax.63
+  #    Bx = [Fc, Ax.1..62]
+  #    Fo = Bx.63 XOR Fc
+  # RCL 
+  #    Bx = [Fc, Ax.1..62]
+  #    Fc = Ax.63
+  #    Fo = Bx.63 XOR Fc
+  # ROR  
+  #    Fc = Ax.0
+  #    Bx = [Ax.1..62, Fc]
+  #    Fo = Bx.63 XOR Bx- 1 ??
+  # RCR  
+  #    Fo = Ax.63 XOR Fc
+  #    Bx = [Ax.1..62, Fc]
+  #    Fc = Ax.0
+  # SHL 
+  #    Fc = Ax.63
+  #    Bx = [0, Ax.1..62]
+  #    Fo = Bx.63 XOR Fc
+  # SHR 
+  #    Fc = Ax.0
+  #    Bx = [Ax.1..62, 0]
+  #    Fo = Ax.63
+  # SAL 
+  #    Fc = Ax.63
+  #    Bx = [0, Ax.1..62]
+  #    Fo = Bx.63 XOR Fc
+  # SAR 
+  #    Fc = Ax.0
+  #    Bx = [Ax.1..63, Ax.63]
+  #    Fo = 0
+
+  Zero = ZERO(64)
+
+  # Shift left 64
+  SL6_p = SELECT(Op.1..2)
+    Ax
+    [Ax.1..63, Fc]
+    Zero
+    Zero
+  END
+  SL6_f = SELECT(Op.1..2)
+    Ax.0
+    Fc
+    Zero.0
+    Zero.0
+  END
+  SL6_o = SELECT(Op.1..2)
+    Ax.0 XOR Ax.63
+    Ax.0 XOR Fc
+    Ax.0
+    Ax.0
+  END
+  CL6 = Cn.6 AND Sz.0 AND Sz.1
+  SL6 = SELECT (CL5) 
+    Ax
+    SL6_p
+  END
+  
+  # Shift left 32
+  SL5_p
+  
+  # Shift left 16
+  SL4_p
+  
+  # Shift left 8
+  SL3_p
+  
+  # Shift left 4
+  SL2_p
+  
+  # Shift left 2
+  SL1_p
+  
+  # Shift left 1
+  SL0_p
+
+
+
+  # p1 = RO:Ax.63 / RC:Fc / SH:0* / SA:0*
+  # f1 = Ax.63
+  # o1 = Ax.63 XOR Ax.62
+  # L1 = [p1, Ax.1..62]
+
+  # p2 = RO:Ax.63..62 / RC:[Fc, Ax.63] / SH:0* / SA:0*
+  # f2 = Ax.62
+  # o1 = Ax.62 XOR Ax.61
+  # L2 = [p2, Ax.2..61]
+
+
+  # s1 = RO:Ax.0 / RC:Fc / SH:0 / SA:Ax.62
+  # f1 = Ax.0
+  # o1 = RO: (Bx.63 XOR Bx- 1) / RC: Ax.63 XOR Fc / SH: Ax.63 / SA: 0
+  # R1 = [Ax.1..63, s1]
+
+  # s2 = RO:Ax.0..1 / RC:[Fc, Ax.0] / SH:0* / SA:Ax.62*
+  # f2 = Ax.1
+  # o2 = RO: (Bx.62 XOR ?) / RC: Ax.62 XOR AX.0 / SH: Ax.62 / SA: 0
+  # R2 = [Ax.2..63, s2]
+
+END
+
